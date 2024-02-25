@@ -75,7 +75,7 @@ int main(void) {
     RCC->RCC_APB2ENR |= (1 << 14);
 
     // We load the reload register with the maximum value (Section 4.4.2)
-    SYST->SYST_RVR = 2666666 - 1;
+    SYST->SYST_RVR |= 0x00FFFFFF;
 
     // We set as internal source the processor clock, from where our systick will 'based' on, the 
     // 'rhythm' to derive from (Section 4.4.1).
