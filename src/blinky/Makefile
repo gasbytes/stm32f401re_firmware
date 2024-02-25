@@ -2,14 +2,14 @@
 CC = arm-none-eabi-gcc
 
 # Directories
+SRC_DIR = .
+INC_DIR = ../../inc
 INIT_DIR = init
-SRC_DIR = src
-INC_DIR = inc
 OBJ_DIR = obj
 OUT_DIR = out
-
+ 
 # Files
-SRC := $(wildcard $(SRC_DIR)/systick.c)
+SRC := $(wildcard $(SRC_DIR)/*.c)
 SRC += $(wildcard $(INIT_DIR)/*.c)
 OBJ := $(patsubst $(SRC_DIR)/%.c, $(SRC_DIR)/$(OBJ_DIR)/%.o, $(SRC))
 OBJ := $(patsubst $(INIT_DIR)/%.c, $(SRC_DIR)/$(OBJ_DIR)/%.o, $(OBJ))
@@ -47,4 +47,4 @@ flash:
 	st-flash --reset write $(OUT_DIR)/out.bin 0x8000000
 
 clean:
-	rm -rf out/
+	rm -rf out/ obj/

@@ -2,7 +2,7 @@
  *@brief simple blinky project
  **/
 #include <stdint.h>
-#include "../inc/peripherals.h"
+#include "../../inc/peripherals.h"
 
 #define MODER 2
 #define pin5 5
@@ -70,7 +70,7 @@ int main(void) {
         // Toggle PA5 (Section 8.4.6)
         GPIOA->GPIOx_ODR ^= (1 << pin5);
 
-        // Wait for 1000ms
-        wait_ms(1000);
+        // Wait for 100ms
+        wait_ms(100);
     }
 }
