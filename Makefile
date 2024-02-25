@@ -2,14 +2,14 @@
 CC = arm-none-eabi-gcc
 
 # Directories
-SRC_DIR = src
-OBJ_DIR = obj
 INIT_DIR = init
-OUT_DIR = out
+SRC_DIR = src
 INC_DIR = inc
+OBJ_DIR = obj
+OUT_DIR = out
 
 # Files
-SRC := $(wildcard $(SRC_DIR)/*.c)
+SRC := $(wildcard $(SRC_DIR)/systick.c)
 SRC += $(wildcard $(INIT_DIR)/*.c)
 OBJ := $(patsubst $(SRC_DIR)/%.c, $(SRC_DIR)/$(OBJ_DIR)/%.o, $(SRC))
 OBJ := $(patsubst $(INIT_DIR)/%.c, $(SRC_DIR)/$(OBJ_DIR)/%.o, $(OBJ))

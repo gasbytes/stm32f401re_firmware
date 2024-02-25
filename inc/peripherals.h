@@ -69,6 +69,34 @@ typedef struct RCC_t{
 }RCC_t;
 
 /*
+ * Simple struct that holds the names of 
+ * the SysTick registers.
+ * SysTick is a 24 bit system timer, that counts
+ * down from the reload value (SYST_CVR) to zero, reloads (with SYST_RVR), that is 
+ * wraps to, the value in the SYST_RVR register on the next clock edge
+ * then counts down on subsequent clocks.
+ *
+ * In general: SYST_CVR == 0 ? generate interrupt, that is index x on the 
+ * vector table.
+ *
+ * It's made out of 4 registers:
+ *
+ * SYST_CSR    -> control and status, used to enable/disable systick
+ * SYST_RVR   -> reload value, an initial counter value
+ * SYST_CVR   -> current value, a current counter value, decremented on each clock cycle
+ * SYST_CALIB -> calibgration value, calibration register
+ *
+ * Section 4.4 of the arm-cortext-m4 datasheet.
+ *
+ * */
+typedef struct SYST_t {
+	__IO uint32_t SYST_CSR;
+	__IO uint32_t SYST_RVR;
+	__IO uint32_t SYST_CVR;
+	__IO uint32_t SYST_CALIB;
+} SYST_t;
+
+/*
  * Pointers used to easily access a particular 
  * register from the struct.
  * */

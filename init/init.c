@@ -18,12 +18,28 @@ extern uint32_t _ebss;
 /** Prototypes **/
 extern int main(void);
 void Reset_handler          (void);
+extern void SysTick_Handler        (void);
 
 /** Initialize Interrupt Vector **/
 __attribute__ ((section(".isr_vector")))
 void (* const fpn_vector[])(void) = {
     (void (*)(void))(&_estack),
     Reset_handler,
+    0,
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0, 
+    0,
+    SysTick_Handler
 };
 
 void Reset_handler(void){
