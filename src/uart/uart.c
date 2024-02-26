@@ -1,7 +1,6 @@
 /*
  *@brief simple uart project
  **/
-#include <stdint.h>
 #include "../../inc/peripherals.h"
 
 #define PA2 2
@@ -83,7 +82,7 @@ void setup_usart() {
     // the USART_BRR.
     // The value for this for the register, is 16MhZ (cpu's frequency) divided by the baud 
     // rate that we wanna communicate with.
-    USART2->USART_BRR = ((0x68 << 4) | 0x3);
+    USART2->USART_BRR = CPU_FREQUENCY/9600;
 
     // We proceed then to enable the TX bit, that 
     // let's us actually transmit bits.
@@ -95,8 +94,8 @@ void setup_usart() {
     // Finally, we can enable the USART2.
     //
     // Section 19.6.4
+    //
     USART2->USART_CR1 |= (1 << 13); // CR1[13], USART enable.
-    
 }
 
 void setup_systick() {
@@ -115,7 +114,7 @@ void setup_systick() {
 }
 
 
-void write_byte() {
+void write_byte(uint8_t byte) {
     // We check if there are any new data using the USART_SR register,
     // if the bit 7 is 1, it means that the data has finished writing.
     // If so, we can use the USART_DR register to write the new data.
@@ -128,7 +127,7 @@ void write_byte() {
     // fine:
     //
     // picocom -b 9600 /dev/ttyACM0.
-    USART2->USART_DR = ('x' & 0xFF); 
+    USART2->USART_DR = (byte & 0xFF); 
 }
 
 int main(void) {
@@ -144,7 +143,7 @@ int main(void) {
         // it means that the timer counter to 0 since last time this was read,
         // toggle the led! (Section 4.4.1)
         if (SYST->SYST_CSR & (1 << 16)) {
-            write_byte();
+            write_byte('x');
         }
     }
 
