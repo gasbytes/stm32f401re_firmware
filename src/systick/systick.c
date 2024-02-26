@@ -73,7 +73,6 @@ int main(void) {
     // This is a OR operation, in particular in this case...
     GPIOA->GPIOx_MODER |=  (1 << (pin5 * MODER));
 
-
     // Enable Clock for SysTick (Section 6.3.12)
     RCC->RCC_APB2ENR |= (1 << 14);
 
