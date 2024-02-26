@@ -2,6 +2,8 @@
  *@brief simple uart project
  **/
 #include "../../inc/peripherals.h"
+#include <stddef.h>
+#include <stdint.h>
 
 #define PA2 2
 
@@ -135,15 +137,24 @@ int main(void) {
     setup_systick();
     setup_usart();
 
+    char *string = "Hello world!\n";
+    char *init_pointer = string;
+    size_t len = 13;
+
     // Amazing! Now we can finally write the bytes, and check them out 
     // from our host system.
     while(1) {
         // We check each iteration if the timer has expired
         // in particular we check if the COUNTFLAG is 1, if so
-        // it means that the timer counter to 0 since last time this was read,
-        // toggle the led! (Section 4.4.1)
+        // it means that the timer counter to 0 since last time this was read.
+        // (Section 4.4.1)
         if (SYST->SYST_CSR & (1 << 16)) {
-            write_byte('x');
+            while (len > 0) {
+                write_byte(*(uint8_t *) string++);
+                len--;
+            }
+            string = init_pointer;
+            len = 13;
         }
     }
 
