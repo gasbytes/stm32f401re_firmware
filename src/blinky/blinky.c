@@ -29,8 +29,8 @@ GPIOx_t * const GPIOA   = (GPIOx_t  *)  0x40020000;
  *@param[in] time | number of ms the processor should wait
  **/
 void wait_ms(int time) {
-    for(int i = 0; i < time; i++) { 
-        for(int j = 0; j < 1600; j++);
+    for(volatile int i = 0; i < time; i++) { 
+        for(volatile int j = 0; j < 1600; j++);
     }
 }
 

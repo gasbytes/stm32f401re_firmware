@@ -1,4 +1,7 @@
-#include "../inc/peripherals.h"
+/*
+ * @brieft simple systick project
+ * */
+#include "../../inc/peripherals.h"
 
 #define MODER 2
 #define pin5 5

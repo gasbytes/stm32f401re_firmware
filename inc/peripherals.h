@@ -97,10 +97,34 @@ typedef struct SYST_t {
 } SYST_t;
 
 /*
- * Pointers used to easily access a particular 
- * register from the struct.
+ * Simple struct that holds the names of the USART 
+ * registers.
+ * UART is not a protocol, it's actually an hardware device
+ * that given as input parallel data, it outputs it as serial
+ * bit by bit.
+ *
+ * Made of two lines: RX (receive) and TX (transmit).
+ *
+ * Universal because it can be configured to implement several serial
+ * protocols.
+ *
+ * Asynchronous because it doesn't have a dedicated clock.
+ *
+ * Two devices to be able to communicate with each other using UART, they 
+ * must have the same baud rate (actually 5% to 10% similar to each other).
+ * They must have the same standard, the line driver, usually the de-facto standard is
+ * RS232.
+ * The line driver basically takes logic i/o from the uart and transform it into
+ * electrical voltages (and viceversa).
  * */
-extern RCC_t * const RCC;
-extern GPIOx_t * const GPIOA;
+typedef struct USART_t {
+	__IO uint32_t USART_SR;
+	__IO uint32_t USART_DR;
+	__IO uint32_t USART_BRR;
+	__IO uint32_t USART_CR1;
+	__IO uint32_t USART_CR2;
+	__IO uint32_t USART_CR3;
+	__IO uint32_t USART_GTPR;
+} USART_t;
 
 #endif
