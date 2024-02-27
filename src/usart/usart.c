@@ -132,13 +132,19 @@ void write_byte(uint8_t byte) {
     USART2->USART_DR = (byte & 0xFF); 
 }
 
+void write_string(char *string, size_t len) {
+    while (len > 0) {
+        write_byte(*(uint8_t *) string++);
+        len--;
+    }
+}
+
 int main(void) {
     setup_gpio();
     setup_systick();
     setup_usart();
 
     char *string = "Hello world!\n";
-    char *init_pointer = string;
     size_t len = 13;
 
     // Amazing! Now we can finally write the bytes, and check them out 
@@ -149,12 +155,7 @@ int main(void) {
         // it means that the timer counter to 0 since last time this was read.
         // (Section 4.4.1)
         if (SYST->SYST_CSR & (1 << 16)) {
-            while (len > 0) {
-                write_byte(*(uint8_t *) string++);
-                len--;
-            }
-            string = init_pointer;
-            len = 13;
+            write_string(string, len);
         }
     }
 
