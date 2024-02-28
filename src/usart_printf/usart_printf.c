@@ -1,10 +1,14 @@
 /*
  *@brief simple redirect printf to uart project
  **/
-#include "usart_printf.h"
+#include "../../inc/peripherals.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+
+#define PA2 2
+
+#define CPU_FREQUENCY 16000000
 
 /**
  * @brief Struct Pointer for RCC Peripherals assigned with fixed address specified in reference manual.

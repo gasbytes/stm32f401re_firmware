@@ -54,7 +54,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <sys/times.h>
-#include "usart_printf.h"
+#include "../../inc/peripherals.h"
 
 extern int errno;
 extern int __io_putchar(int ch) __attribute__((weak));
@@ -83,17 +83,25 @@ void _exit (int status)
 }
 
 
-__attribute__((weak)) int _read(int file, char *ptr, int len)
-{
-    (void) file, (void) ptr, (void) len;
+int read_byte() {
+    // We check if there are any data that is being transferred 
+    // using the USART_SR register, if the bit 5 is 1, it means that 
+    // the data has finished writing.
+    // If so, we can return the USART_DR register to read new data.
+    //
+    // Section 19.6.1
+    while(!((USART2->USART_SR & (1 << 5)))); 
 
-    return -1;
+    return USART2->USART_DR;
 }
 
 void write_byte(uint8_t byte) {
-    // We check if there are any new data using the USART_SR register,
-    // if the bit 7 is 1, it means that the data has finished writing.
+    // We check if there are any data that is being transferred 
+    // using the USART_SR register, if the bit 7 is 1, it means that 
+    // the data has finished writing.
     // If so, we can use the USART_DR register to write the new data.
+    //
+    // Section 19.6.1
     while(!((USART2->USART_SR & (1 << 7)))); 
 
     // Sets the data register to the ASCII code of the 
@@ -117,6 +125,19 @@ __attribute__((weak)) int _write(int file, char *ptr, int len)
 
     return len;
 }
+
+__attribute__((weak)) int _read(int file, char *ptr, int len)
+{
+    int DataIdx;
+
+    for (DataIdx = 0; DataIdx < len; DataIdx++)
+    {
+        *ptr++ = read_byte();
+    }
+
+    return len;
+}
+
 
 int _close(int file)
 {
