@@ -48,3 +48,9 @@ flash:
 
 clean:
 	rm -rf out/ obj/
+
+openocd:
+	openocd -f $(OPENOCD_INTERFACE) -f $(OPENOCD_TARGET)
+
+debug:
+	arm-none-eabi-gdb $(OUT_DIR)/out.elf -ex "target extended-remote localhost:3333"
