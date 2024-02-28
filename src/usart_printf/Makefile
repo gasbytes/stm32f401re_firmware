@@ -18,7 +18,7 @@ LD := $(wildcard $(INIT_DIR)/*.ld)
 # FLAGS
 MARCH = cortex-m4
 CFLAGS = -g -Wall -mcpu=$(MARCH) -mthumb -mfloat-abi=soft -I$(INC_DIR)
-LFLAGS = --specs=nano.specs -T $(LD) -Wl,-Map=$(DEB_DIR)/main.map
+LFLAGS = --specs=nano.specs -T $(LD) -Wl,-Map=$(OUT_DIR)/out.map
 
 # Targets
 TARGET = $(OUT_DIR)/out.elf
