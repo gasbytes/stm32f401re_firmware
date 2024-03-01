@@ -127,6 +127,29 @@ typedef struct USART_t {
 	__IO uint32_t USART_GTPR;
 } USART_t;
 
+typedef struct TIMx_t {
+	__IO uint32_t TIMx_CR1;
+	__IO uint32_t TIMx_CR2;
+	__IO uint32_t TIMx_SMCR;
+	__IO uint32_t TIMx_DIER;
+	__IO uint32_t TIMx_SR;
+	__IO uint32_t TIMx_EGR;
+	__IO uint32_t TIMx_CCMR1;
+	__IO uint32_t TIMx_CCMR2;
+	__IO uint32_t TIMx_CCER;
+	__IO uint32_t TIMx_CNT;
+	__IO uint32_t TIMx_PSC;
+	__IO uint32_t TIMx_ARR;
+	__IO uint32_t TIMx_RCR;
+	__IO uint32_t TIMx_CCR1;
+	__IO uint32_t TIMx_CCR2;
+	__IO uint32_t TIMx_CCR3;
+	__IO uint32_t TIMx_CCR4;
+	__IO uint32_t TIMx_BDTR;
+	__IO uint32_t TIMx_DCR;
+	__IO uint32_t TIMx_DMAR;
+} TIMx_t ;
+
 /**
  * @brief Struct Pointer for RCC Peripherals assigned with fixed address specified in reference manual.
  *
@@ -154,5 +177,10 @@ extern USART_t * const USART2;
  * See section 4.4 System timer, SysTick (ARM-cortex-m4 datasheet).
  * */
 extern SYST_t * const SYST;
+
+/*
+ * @brief Struct Pointer for TIM2 Peripherals assigned with fixed address specified in reference manual.
+ * */
+extern TIMx_t  * const TIM2;
 
 #endif

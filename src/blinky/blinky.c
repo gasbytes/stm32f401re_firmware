@@ -63,7 +63,7 @@ int main(void) {
     GPIOA->GPIOx_MODER &= ~(3 << (pin5 * MODER));
 
     // Write Value 1 to MODER Bitfield PA5 to configure PA5 as OUTPUT (Section 8.4.1)
-    // This is a OR operation, in particular in this case...
+    // This is a OR operation, in particular in this case we set to 1 the pin5 (01).
     GPIOA->GPIOx_MODER |=  (1 << (pin5 * MODER));
     
     for(;;) {
