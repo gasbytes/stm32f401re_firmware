@@ -32,18 +32,14 @@ TIMx_t  * const TIM2 = (TIMx_t *) 0x40000000;
  * */
 SYST_t * const SYST = (SYST_t *) 0xE000E010;
 
-void pwm_set_duty_cycle(float duty_cycle) {
+void set_duty_cycle(float duty_cycle) {
     const float raw_value = (float)1000 * (duty_cycle / 100.0f);
 
     // set duty cycle on channel 1
     TIM2->TIMx_CCR1 = (uint32_t)raw_value;
 }
 
-/**
- * @brief Main entry point for pwm project
- *
- **/
-int main(void) {
+void setup_gpio(void) {
     // Enable Clock for the GPIOA Peripheral (Section 6.3.9)
     // This is a OR operation and lets us set individual bits,
     // in particular in this case we set the least significant bit to 1.
@@ -65,7 +61,9 @@ int main(void) {
     // Set PA5 AF01 (Section 8.4.9)
     GPIOA->GPIOx_AFRL &= ~(0xF << (pin5 * 4));
     GPIOA->GPIOx_AFRL |=  (1 << (pin5 * 4));
+}
 
+void setup_tim(void) {
     // Enable the clock for the timer peripheral, in particular we are gonna use the 
     // the TIM2 peripheral (Section 6.3.11), which is at bit 1.
     // In particular we use the TIM2 because the alternate function table (table 9 in the stm32f401re.pdf)
@@ -85,10 +83,9 @@ int main(void) {
     TIM2->TIMx_CCER |= (1 << 0);
     // Enable timer 2 module
     TIM2->TIMx_CR1 |= 1;
+}
 
-    float duty_cycle = 0.0f;
-    pwm_set_duty_cycle(duty_cycle);
-
+void setup_syst(void) {
     // We load the reload register with the maximum value (Section 4.4.2)
     SYST->SYST_RVR = 250000 - 1;
 
@@ -98,11 +95,47 @@ int main(void) {
     
     // We then proceed to finally enable the SysTick timer (Section 4.4.1)
     SYST->SYST_CSR |= (1 << 0);
+}
+
+/**
+ * @brief Main entry point for pwm project
+ *
+ * Period: how much time passes between a peak of a wave and the next wave,
+ * in particular it can be calculated with 1/f.
+ *
+ * Duty cycle: how long is the wave in positive state.
+ *
+ * The implementation of it it's quite simple:
+ *
+ * counter register -> counts till the auto-reload value.
+ * auto-reload register -> max value we can reach.
+ * capture compare value -> value we compare to.
+ * This comparison with the capture compare value allows us 
+ * to create a wave.
+ *
+ * So basically, starting from a digital source (5v or 0v), we 
+ * generate a fake analogue more precise voltage (e.g. 0.3v).
+ * By cycling a digital signal ON and OFF at a fast enough rate
+ * and at a certain duty cycle, the output will appear like a constant 
+ * voltage analouge signal.
+ * Which give this "fading effect" to our eyes, but in reality, we are just
+ * switching it on and off really quickly.
+ **/
+int main(void) {
+    setup_gpio();
+    setup_tim();
+    setup_syst();
+
+    float duty_cycle = 0.0f;
+    set_duty_cycle(duty_cycle);
 
     while (1) {
         // We check each iteration if the timer has expired
         // in particular we check if the COUNTFLAG is 1, if so
         // it means that the timer counter to 0 since last time this was read.
+        //
+        // If we are inside the if scope, we just increment the duty cycle, to increment
+        // its brightness (increment how long it stays on).
         if (SYST->SYST_CSR & (1 << 16)) {
             duty_cycle += 1.0f;
 
@@ -110,7 +143,7 @@ int main(void) {
                 duty_cycle = 0.0f;
             }
 
-            pwm_set_duty_cycle(duty_cycle);
+            set_duty_cycle(duty_cycle);
         }
     }
 
