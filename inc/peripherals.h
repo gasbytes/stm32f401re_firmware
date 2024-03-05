@@ -1,8 +1,8 @@
 /**
  *@brief Peripheral initialization using structs.
  **/
-#ifndef PERIPHERLAS_H
-#define PERIPHERLAS_H
+#ifndef PERIPHERALS_H
+#define PERIPHERALS_H
 
 #include <stdint.h>
 
