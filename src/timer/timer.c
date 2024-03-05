@@ -186,6 +186,10 @@ int main(void) {
     setup_systick();
 
     minimal_timer_t timer;
+
+    // Since the RELOAD register is 1000ms,
+    // the cycle is 1000ms, which means that
+    // our timer with a value of 5 is 5000ms (5 seconds).
     setup_timer(&timer, 5, 1);
 
     while(1) {
