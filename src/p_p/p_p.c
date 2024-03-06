@@ -108,9 +108,16 @@ int main(void) {
     setup_gpio();
     setup_usart();
 
+    int a;
+    char input[10], byte;
+
     while(1) {
-        int input = read_byte();
-        printf("input: %i\n", input);
+        for(int i = 0; i < 10; i++) input[i++] = '\0';
+        for(int i = 0; (byte = read_byte()) != '\r'; ) input[i++] = byte;
+        sscanf(input, "%d", &a);
+
+        printf("input typed: %d\n", a) ;
+        printf("\n");
     }
 
     return 0;
