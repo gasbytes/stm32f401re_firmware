@@ -102,6 +102,10 @@ void setup_usart() {
     USART2->USART_CR1 |= (1 << 13); // CR1[13], USART enable.
 }
 
+/*
+ * Implementation present in the syscalls.c file, since 
+ * it's used by the _read function.
+ * */
 char read_byte();
 
 int main(void) {
