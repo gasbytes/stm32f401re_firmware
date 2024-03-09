@@ -2,6 +2,8 @@
 #define P_P_H
 
 #include <stdint.h>
+#include <stdio.h>
+#include <stdbool.h>
 
 /*
  * Macros that hold the constants values and 
@@ -41,28 +43,28 @@ typedef struct packet_t {
 packet_t *create_packet(uint8_t length, uint8_t *data);
 
 /*
- * Computes the rcc.
+ * Computes the rcc (CRC-8 implementation, it uses the polynomial '0x07'
  * */
-uint8_t *computer_crc(uint8_t length, uint8_t *data);
+uint8_t compute_crc(uint8_t length, uint8_t *data);
 
 /*
  * Actually sends the packet, and waits for the response.
  * */
-packet_t *send_packet(packet_t *p);
+bool send_packet(packet_t *p);
 
 /*
  * Sends an ACK packet.
  * */
-packet_t *send_ack();
+bool send_ack();
 
 /*
  * Sends aan RCK packet.
  * */
-packet_t *send_rck();
+bool send_rck();
 
 /*
  * Handles a received packet.
  * */
-packet_t *handle_packet(packet_t *p);
+bool handle_packet(packet_t *p);
 
 #endif // !P_P_H

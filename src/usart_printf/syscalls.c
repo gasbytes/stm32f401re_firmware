@@ -82,7 +82,6 @@ void _exit (int status)
     while (1) {}		/* Make sure we hang here */
 }
 
-
 int read_byte() {
     // We check if there are any data that is being transferred 
     // using the USART_SR register, if the bit 5 is 1, it means that 

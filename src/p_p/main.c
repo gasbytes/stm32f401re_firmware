@@ -1,6 +1,3 @@
-/*
- *@brief simple redirect printf to uart project
- **/
 #include "../../inc/peripherals.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -102,26 +99,12 @@ void setup_usart() {
     USART2->USART_CR1 |= (1 << 13); // CR1[13], USART enable.
 }
 
-/*
- * Implementation present in the syscalls.c file, since 
- * it's used by the _read function.
- * */
-char read_byte();
 
 int main(void) {
     setup_gpio();
     setup_usart();
 
-    int a;
-    char input[10], byte;
-
     while(1) {
-        for(int i = 0; i < 10; i++) input[i++] = '\0';
-        for(int i = 0; (byte = read_byte()) != '\r'; ) input[i++] = byte;
-        sscanf(input, "%d", &a);
-
-        printf("input typed: %d\n", a) ;
-        printf("\n");
     }
 
     return 0;
