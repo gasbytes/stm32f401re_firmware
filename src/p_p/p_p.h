@@ -67,4 +67,10 @@ bool send_rck();
  * */
 bool handle_packet(packet_t *p);
 
+void write_byte(uint8_t byte);
+
+uint32_t read_byte();
+
+void print_packet(packet_t *p);
+
 #endif // !P_P_H

@@ -1,11 +1,9 @@
 #include "../../inc/peripherals.h"
+#include "p_p.h"
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #define PA2 2
-#define PA3 3
-
 #define CPU_FREQUENCY 16000000
 
 /**
@@ -13,21 +11,28 @@
  *
  * See Memory map, Section 2.3.
  **/
-RCC_t * const RCC = (RCC_t *) 0x40023800;
+RCC_t   * const RCC     = (RCC_t    *)  0x40023800; 
 
 /**
  * @brief Struct Pointer for GPIOA Peripherals assigned with fixed address specified in reference manual.
  *
  * See Memory map, Section 2.3.
  **/
-GPIOx_t * const GPIOA = (GPIOx_t *) 0x40020000;
+GPIOx_t * const GPIOA   = (GPIOx_t  *)  0x40020000;
 
 /*
  * @brieft Struct pointer for the UART2 Peripherals assigned with fixed address specified in reference manual.
  *
  * See Memory Map, Section 2.3.
  * */
-USART_t * const USART2 = (USART_t *) 0x40004400;
+USART_t * const USART2 = (USART_t *)  0x40004400;
+
+/*
+ * @brief Struct Pointer for SYST (System Timer) assigned with fixed address specified in the datasheet.
+ *
+ * See section 4.4 System timer, SysTick (ARM-cortex-m4 datasheet).
+ * */
+SYST_t * const SYST = (SYST_t *) 0xE000E010;
 
 void setup_gpio() {
     // Enable Clock for the GPIOA Peripheral (Section 6.3.9)
@@ -50,12 +55,8 @@ void setup_gpio() {
     // First we clear the bits, then we set them.
     // In particular we need to set AF07 to 0111, which is...yes you guessed it
     // 7 in decimal.
-    // We also do the same for the RX.
     GPIOA->GPIOx_AFRL &= ~(0xF << (PA2 * 4)); // clear bits AFRL7[3:0]
     GPIOA->GPIOx_AFRL |= (7 << (PA2 * 4)); // set bits AFRL7[3:0]
-    GPIOA->GPIOx_AFRL &= ~(0xF << (PA3 * 4));
-    GPIOA->GPIOx_AFRL |=  (7   << (PA3 * 4));
-    
     
     // Now we can enable the alternate function, by setting the moder
     // register to 10 (binary).
@@ -63,8 +64,6 @@ void setup_gpio() {
     // Section 8.4.9.
     GPIOA->GPIOx_MODER &= ~(3 << (PA2 * 2)); // clear bits MODER1[1:0]
     GPIOA->GPIOx_MODER |= (2 << (PA2 * 2)); // set bits MODER1[1:0]
-    GPIOA->GPIOx_MODER &= ~(3 << (PA3 * 2)); // clear bits MODER1[1:0]
-    GPIOA->GPIOx_MODER |= (2 << (PA3 * 2)); // set bits MODER1[1:0]
 }
 
 void setup_usart() {
@@ -73,7 +72,8 @@ void setup_usart() {
     // operation, and we shift a 1 to the 17th position.
     // Section 6.3.11.
     RCC->RCC_APB1ENR |= (1 << 17);
-
+    
+    
     // Next step is to set the Baudrate, the rate at which information 
     // is transferred in a communication channel.
     // The usual standard is 9600, so maximum 9600 bits per second.
@@ -85,13 +85,11 @@ void setup_usart() {
 
     // We proceed then to enable the TX bit, that 
     // let's us actually transmit bits.
-    // We do the same for the RX bit.
     //
     // Section 19.6.4.
     USART2->USART_CR1 |= (1 << 3); // CR1[3], transmitter enable
-    USART2->USART_CR1 |= (1 << 2); // CR1[2], receiver enable
     USART2->USART_CR1 &= ~(1 << 12);
-
+    
     // Finally, we can enable the USART2.
     //
     // Section 19.6.4
@@ -99,12 +97,43 @@ void setup_usart() {
     USART2->USART_CR1 |= (1 << 13); // CR1[13], USART enable.
 }
 
+void setup_systick() {
+    // Enable Clock for SysTick (Section 6.3.12)
+    RCC->RCC_APB2ENR |= (1 << 14);
+
+    // We load the reload register with the maximum value (Section 4.4.2)
+    SYST->SYST_RVR |= 0x00FFFFFF;
+
+    // We set as internal source the processor clock, from where our systick will 'based' on, the 
+    // 'rhythm' to derive from (Section 4.4.1).
+    SYST->SYST_CSR |= (1 << 2);
+    
+    // We then proceed to finally enable the SysTick timer (Section 4.4.1)
+    SYST->SYST_CSR |= (1 << 0);
+}
 
 int main(void) {
     setup_gpio();
+    setup_systick();
     setup_usart();
 
+    // Create a packet for testing
+    uint8_t test_data[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+    packet_t test_packet = *create_packet(sizeof(test_data), test_data);
+
     while(1) {
+        // We check each iteration if the timer has expired
+        // in particular we check if the COUNTFLAG is 1, if so
+        // it means that the timer counter to 0 since last time this was read.
+        // (Section 4.4.1)
+        //
+        if (SYST->SYST_CSR & (1 << 16)) {
+            printf("Sending test_packet:\n");
+            print_packet(&test_packet);
+        }
+        if (SYST->SYST_CSR & (1 << 16)) {
+            send_packet(&test_packet);
+        }
     }
 
     return 0;

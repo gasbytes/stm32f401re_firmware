@@ -17,7 +17,6 @@ extern uint32_t _ebss;
 
 /** Prototypes **/
 extern int main(void);
-extern void __libc_init_array(void);
 void Reset_handler          (void);
 
 /** Initialize Interrupt Vector **/
@@ -45,11 +44,6 @@ void Reset_handler(void){
     for(uint32_t *bss_ptr = (uint32_t *)&_sbss; bss_ptr < &_ebss;){
         *bss_ptr++ = 0;
     }
-
-    /* 
-     * libc init 
-     * */
-    __libc_init_array();
 
     /*
      * Call to the main function.

@@ -45,7 +45,7 @@ uint8_t compute_crc(uint8_t length, uint8_t *data) {
     return crc;
 }
 
-int read_byte() {
+uint32_t read_byte() {
     // We check if there are any data that is being transferred 
     // using the USART_SR register, if the bit 5 is 1, it means that 
     // the data has finished writing.
@@ -122,4 +122,13 @@ bool send_rck() {
     // For now, we always return true.
 
     return true;
+}
+
+// Function to print a packet in a pretty way
+void print_packet(packet_t *p) {
+    printf("length: %u | data: ", p->length);
+    for (uint8_t i = 0; i < DATA_LENGTH; ++i) {
+        printf("%02X ", p->data[i]);
+    }
+    printf("| crc: %02X\n", p->crc);
 }
