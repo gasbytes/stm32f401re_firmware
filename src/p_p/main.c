@@ -118,8 +118,16 @@ int main(void) {
     setup_usart();
 
     // Create a packet for testing
-    uint8_t test_data[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
-    packet_t test_packet = *create_packet(sizeof(test_data), test_data);
+    uint8_t test_data1[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+    packet_t test_packet = *create_packet(sizeof(test_data1), test_data1);
+
+    // Create an ACK packet
+    uint8_t test_data2[] = {ACK};
+    packet_t ack_packet = *create_packet(sizeof(test_data2), test_data2);
+
+    // Create an ACK packet
+    uint8_t test_data3[] = {RCK};
+    packet_t rck_packet = *create_packet(sizeof(test_data3), test_data3);
 
     while(1) {
         // We check each iteration if the timer has expired
@@ -130,9 +138,11 @@ int main(void) {
         if (SYST->SYST_CSR & (1 << 16)) {
             printf("Sending test_packet:\n");
             print_packet(&test_packet);
-        }
-        if (SYST->SYST_CSR & (1 << 16)) {
+            print_packet(&ack_packet);
+            print_packet(&rck_packet);
             send_packet(&test_packet);
+            send_rck();
+            send_ack();
         }
     }
 

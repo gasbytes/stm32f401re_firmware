@@ -78,9 +78,11 @@ void write_byte(uint8_t byte) {
 
 bool send_packet(packet_t *p) {
     // Send packet over UART
-    for (uint8_t i = 0; i < PACKET_LENGTH; ++i) {
+    write_byte(p->length);
+    for (uint8_t i = 0; i < DATA_LENGTH; ++i) {
         write_byte(p->data[i]);
     }
+    write_byte(p->crc);
 
     // TODO: Handle response.
     // For now, we always return true.
@@ -90,15 +92,15 @@ bool send_packet(packet_t *p) {
 
 bool send_ack() {
     // Create an ACK packet
-    packet_t ack_packet;
-    ack_packet.length = LENGTH;
-    ack_packet.data[0] = ACK;
-    ack_packet.crc = compute_crc(LENGTH, ack_packet.data);
+    uint8_t test_data[] = {ACK};
+    packet_t ack_packet = *create_packet(sizeof(test_data), test_data);
 
     // Send the ACK packet over UART
+    write_byte(ack_packet.length);
     for (uint8_t i = 0; i < PACKET_LENGTH; ++i) {
         write_byte(ack_packet.data[i]);
     }
+    write_byte(ack_packet.crc);
 
     // TODO: Handle response.
     // For now, we always return true.
@@ -107,16 +109,16 @@ bool send_ack() {
 }
 
 bool send_rck() {
-    // Create an RCK packet
-    packet_t rck_packet;
-    rck_packet.length = LENGTH;
-    rck_packet.data[0] = ACK;
-    rck_packet.crc = compute_crc(LENGTH, rck_packet.data);
+    // Create an ACK packet
+    uint8_t test_data[] = {RCK};
+    packet_t rck_packet = *create_packet(sizeof(test_data), test_data);
 
     // Send the ACK packet over UART
+    write_byte(rck_packet.length);
     for (uint8_t i = 0; i < PACKET_LENGTH; ++i) {
         write_byte(rck_packet.data[i]);
     }
+    write_byte(rck_packet.crc);
 
     // TODO: Handle response.
     // For now, we always return true.
