@@ -125,11 +125,13 @@ uint8_t read_byte() {
 }
 
 void handle_packet(packet_t *p) {
-    // For testing purposes, this function only prints out 
-    // the packet that has just been sent.
-    // But obviously, since this is a pretty flexible api, you can just use the reads
-    // to get the data from the DR register and use it for other purposes.
-    // (e.g.: i got an ack packet, amazing, now i can do x etc...)
+    // For testing purposes and simplicity of implementation, 
+    // this function only prints out the packet that has just been sent.
+    // But obviously, since this is a pretty flexible API, you can use it for other
+    // purposes.
+    // e.g.: I received an ACK packet on my Arduino Uno (open RX pin waiting for data), amazing, now I can go to the next packet to send etc...
+    // Obviously to do that, you need to patch the stm32 pin TX to the RX pin of the Arduino Uno, in order to serially
+    // communicate with it.
     
     write_byte(p->length);
 
