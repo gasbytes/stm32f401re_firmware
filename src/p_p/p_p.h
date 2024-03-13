@@ -65,7 +65,7 @@ void send_rck();
 /*
  * Handles a received packet.
  * */
-void handle_packet();
+void handle_packet(packet_t *p);
 
 void write_byte(uint8_t byte);
 

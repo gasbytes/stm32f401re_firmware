@@ -74,6 +74,8 @@ void send_packet(packet_t *p) {
         write_byte(p->data[i]);
     }
     write_byte(p->crc);
+
+    handle_packet(p);
 }
 
 void send_ack() {
@@ -83,13 +85,14 @@ void send_ack() {
 
     // Send the ACK packet over UART
     write_byte(ack_packet.length);
-    read_byte();
 
     for (uint8_t i = 0; i < DATA_LENGTH; ++i) {
         write_byte(ack_packet.data[i]);
     }
 
     write_byte(ack_packet.crc);
+
+    handle_packet(&ack_packet);
 }
 
 void send_rck() {
@@ -105,6 +108,8 @@ void send_rck() {
     }
 
     write_byte(rck_packet.crc);
+
+    handle_packet(&rck_packet);
 }
 
 uint8_t read_byte() {
@@ -119,9 +124,18 @@ uint8_t read_byte() {
     return USART2->USART_DR;
 }
 
-void handle_packet() {
-    for (uint8_t i = 0; i < PACKET_LENGTH; ++i) {
-        uint8_t byte = read_byte();
-        write_byte(byte);
+void handle_packet(packet_t *p) {
+    // For testing purposes, this function only prints out 
+    // the packet that has just been sent.
+    // But obviously, since this is a pretty flexible api, you can just use the reads
+    // to get the data from the DR register and use it for other purposes.
+    // (e.g.: i got an ack packet, amazing, now i can do x etc...)
+    
+    write_byte(p->length);
+
+    for (uint8_t i = 0; i < DATA_LENGTH; ++i) {
+        write_byte(p->data[i]);
     }
+
+    write_byte(p->crc);
 }

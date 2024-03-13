@@ -135,7 +135,6 @@ int main(void) {
         //
         if (SYST->SYST_CSR & (1 << 16)) {
             send_ack();
-            handle_packet();
         }
     }
 
