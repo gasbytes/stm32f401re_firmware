@@ -7,6 +7,7 @@
 
 #define PA2 2
 #define PA3 3
+#define PA5 5
 
 #define CPU_FREQUENCY 16000000
 
@@ -65,6 +66,11 @@ void setup_gpio() {
     GPIOA->GPIOx_MODER |= (2 << (PA2 * 2)); // set bits MODER1[1:0]
     GPIOA->GPIOx_MODER &= ~(3 << (PA3 * 2)); // clear bits MODER1[1:0]
     GPIOA->GPIOx_MODER |= (2 << (PA3 * 2)); // set bits MODER1[1:0]
+    
+    // Finally we do the usual for the the PA5 pin, to use the user led,
+    // Which is to set it in output mode.
+    GPIOA->GPIOx_MODER &= ~(3 << (PA5 * 2));
+    GPIOA->GPIOx_MODER |=  (1 << (PA5 * 2));
 }
 
 void setup_usart() {
@@ -98,7 +104,6 @@ void setup_usart() {
     USART2->USART_CR1 |= (1 << 13); // CR1[13], USART enable.
 }
 
-
 void write_byte(uint8_t byte) {
     // We check if there are any new data using the USART_SR register,
     // if the bit 7 is 1, it means that the data has finished writing.
@@ -127,19 +132,41 @@ uint8_t read_byte() {
     return USART2->USART_DR;
 }
 
-void write_next_letter(uint8_t byte) {
-    write_byte(byte + 1);
+void write_string(char *string, size_t len) {
+    while (len > 0) {
+        write_byte(*(uint8_t *) string++);
+        len--;
+    }
+}
+
+void toggle_led(uint8_t byte) {
+    char *string_on = "LED is on.\n";
+    char *string_off = "LED is off.\n";
+    char *error = "Value not valid.\n";
+    size_t len = 11;
+
+    if (byte == '1') {
+        write_string(string_on, len);
+        GPIOA->GPIOx_ODR &= ~(1 << PA5);
+        GPIOA->GPIOx_ODR ^= (1 << 5);
+    } else if (byte == '0') {
+        write_string(string_off, len+1);
+        GPIOA->GPIOx_ODR &= ~(1 << PA5);
+    } else {
+        write_string(error, len+6);
+    }
 }
 
 int main(void) {
     setup_gpio();
     setup_usart();
 
+
     // Amazing! Now we can finally write the bytes, and check them out 
     // from our host system.
     while(1) {
         uint8_t byte = read_byte();
-        write_next_letter(byte);
+        toggle_led(byte);
     }
 
     return 0;
