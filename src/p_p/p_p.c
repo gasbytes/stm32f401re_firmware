@@ -45,18 +45,6 @@ uint8_t compute_crc(uint8_t length, uint8_t *data) {
     return crc;
 }
 
-uint32_t read_byte() {
-    // We check if there are any data that is being transferred 
-    // using the USART_SR register, if the bit 5 is 1, it means that 
-    // the data has finished writing.
-    // If so, we can return the USART_DR register to read new data.
-    //
-    // Section 19.6.1
-    while(!((USART2->USART_SR & (1 << 5)))); 
-
-    return USART2->USART_DR;
-}
-
 void write_byte(uint8_t byte) {
     // We check if there are any data that is being transferred 
     // using the USART_SR register, if the bit 7 is 1, it means that 
@@ -74,63 +62,66 @@ void write_byte(uint8_t byte) {
     //
     // picocom -b 9600 /dev/ttyACM0.
     USART2->USART_DR = (byte & 0xFF); 
+
+    // We wait for the transmission to be completed.
+    while(!(USART2->USART_SR & (1 << 6)));
 }
 
-bool send_packet(packet_t *p) {
+void send_packet(packet_t *p) {
     // Send packet over UART
     write_byte(p->length);
     for (uint8_t i = 0; i < DATA_LENGTH; ++i) {
         write_byte(p->data[i]);
     }
     write_byte(p->crc);
-
-    // TODO: Handle response.
-    // For now, we always return true.
-    
-    return true;
 }
 
-bool send_ack() {
+void send_ack() {
     // Create an ACK packet
     uint8_t test_data[] = {ACK};
     packet_t ack_packet = *create_packet(sizeof(test_data), test_data);
 
     // Send the ACK packet over UART
     write_byte(ack_packet.length);
-    for (uint8_t i = 0; i < PACKET_LENGTH; ++i) {
+    read_byte();
+
+    for (uint8_t i = 0; i < DATA_LENGTH; ++i) {
         write_byte(ack_packet.data[i]);
     }
+
     write_byte(ack_packet.crc);
-
-    // TODO: Handle response.
-    // For now, we always return true.
-
-    return true;
 }
 
-bool send_rck() {
+void send_rck() {
     // Create an ACK packet
     uint8_t test_data[] = {RCK};
     packet_t rck_packet = *create_packet(sizeof(test_data), test_data);
 
     // Send the ACK packet over UART
     write_byte(rck_packet.length);
-    for (uint8_t i = 0; i < PACKET_LENGTH; ++i) {
+
+    for (uint8_t i = 0; i < DATA_LENGTH; ++i) {
         write_byte(rck_packet.data[i]);
     }
+
     write_byte(rck_packet.crc);
-
-    // TODO: Handle response.
-    // For now, we always return true.
-
-    return true;
 }
 
-// Function to print a packet in a pretty way
-void print_packet(packet_t *p) {
-    printf("length: %u | data: ", p->length);
-    for (uint8_t i = 0; i < DATA_LENGTH; ++i) {
-        printf("%02X ", p->data[i]);
+uint8_t read_byte() {
+    // We check if there are any data that is being transferred 
+    // using the USART_SR register, if the bit 5 is 1, it means that 
+    // the data has finished writing.
+    // If so, we can return the USART_DR register to read new data.
+    //
+    // Section 19.6.1
+    while(!((USART2->USART_SR & (1 << 5))));
+
+    return USART2->USART_DR;
+}
+
+void handle_packet() {
+    for (uint8_t i = 0; i < PACKET_LENGTH; ++i) {
+        uint8_t byte = read_byte();
+        write_byte(byte);
     }
-    printf("| crc: %02X\n", p->crc);
 }

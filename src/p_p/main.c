@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #define PA2 2
+#define PA3 3
 #define CPU_FREQUENCY 16000000
 
 /**
@@ -35,35 +36,24 @@ USART_t * const USART2 = (USART_t *)  0x40004400;
 SYST_t * const SYST = (SYST_t *) 0xE000E010;
 
 void setup_gpio() {
-    // Enable Clock for the GPIOA Peripheral (Section 6.3.9)
-    // This is a OR operation and lets us set individual bits,
-    // in particular in this case we set the least significant bit to 1.
-    // Since to enable the clock for the GPIOA we need to set 
-    // bit 0 to 1 (0x00000001).
-    //
-    // This is needed so we can use pins PA2 and PA3.
+    /** Enable CLOCK for GPIOA **/
     RCC->RCC_AHB1ENR |= 1;
 
-    // Next step, is to configure (and then enable) the alternate function.
-    // The alternate function is necessary so that we can 
-    // use it for different tasks (instead of only analog, output etc...).
-    //
-    // From the document stm32f401re.pdf, we can find from the table 9
-    // the alternate function mapping. In particular we can see that for the pins
-    // PA2 (TX) and PA3 (RX) (the ones needed to UART through the st-link into my host system), we need to configure
-    // the AF07.
-    // First we clear the bits, then we set them.
-    // In particular we need to set AF07 to 0111, which is...yes you guessed it
-    // 7 in decimal.
-    GPIOA->GPIOx_AFRL &= ~(0xF << (PA2 * 4)); // clear bits AFRL7[3:0]
-    GPIOA->GPIOx_AFRL |= (7 << (PA2 * 4)); // set bits AFRL7[3:0]
-    
-    // Now we can enable the alternate function, by setting the moder
-    // register to 10 (binary).
-    //
-    // Section 8.4.9.
-    GPIOA->GPIOx_MODER &= ~(3 << (PA2 * 2)); // clear bits MODER1[1:0]
-    GPIOA->GPIOx_MODER |= (2 << (PA2 * 2)); // set bits MODER1[1:0]
+    /** SET AF07 for PA2 **/
+    GPIOA->GPIOx_AFRL &= ~(0xF << (2 * 4));
+    GPIOA->GPIOx_AFRL |=  (7   << (2 * 4));
+
+    /** SET AF07 for PA3 **/
+    GPIOA->GPIOx_AFRL &= ~(0xF << (3 * 4));
+    GPIOA->GPIOx_AFRL |=  (7   << (3 * 4));
+
+    /** Set AF Mode for PA2 **/
+    GPIOA->GPIOx_MODER &= ~(3 << (2 * 2));
+    GPIOA->GPIOx_MODER |=  (2 << (2 * 2));
+
+    /** Set AF Mode for PA3 **/
+    GPIOA->GPIOx_MODER &= ~(3 << (3 * 2));
+    GPIOA->GPIOx_MODER |=  (2 << (3 * 2));
 }
 
 void setup_usart() {
@@ -81,15 +71,28 @@ void setup_usart() {
     // the USART_BRR.
     // The value for this for the register, is 16MhZ (cpu's frequency) divided by the baud 
     // rate that we wanna communicate with.
+    USART2->USART_BRR &= ~0xFFFF;
     USART2->USART_BRR = CPU_FREQUENCY/9600;
+
+    // Enabling the oversampling.
+    USART2->USART_CR1 &= ~(1 << 15);
+
+    // Setting the word length to 8 data bits,
+    // and n stop bit.
+    USART2->USART_CR1 &= ~(1 << 12);
 
     // We proceed then to enable the TX bit, that 
     // let's us actually transmit bits.
+    // We do the same for the RX bit, so we can 
+    // actually receive the bits and handle them.
     //
     // Section 19.6.4.
     USART2->USART_CR1 |= (1 << 3); // CR1[3], transmitter enable
-    USART2->USART_CR1 &= ~(1 << 12);
-    
+    USART2->USART_CR1 |= (1 << 2); // CR1[2], receiver enable
+
+    // We also set up the stop bit.
+    USART2->USART_CR2 &= ~(3 << 12);
+
     // Finally, we can enable the USART2.
     //
     // Section 19.6.4
@@ -112,22 +115,17 @@ void setup_systick() {
     SYST->SYST_CSR |= (1 << 0);
 }
 
+void write_string(char *string, size_t len) {
+    while (len > 0) {
+        write_byte(*(uint8_t *) string++);
+        len--;
+    }
+}
+
 int main(void) {
     setup_gpio();
     setup_systick();
     setup_usart();
-
-    // Create a packet for testing
-    uint8_t test_data1[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
-    packet_t test_packet = *create_packet(sizeof(test_data1), test_data1);
-
-    // Create an ACK packet
-    uint8_t test_data2[] = {ACK};
-    packet_t ack_packet = *create_packet(sizeof(test_data2), test_data2);
-
-    // Create an ACK packet
-    uint8_t test_data3[] = {RCK};
-    packet_t rck_packet = *create_packet(sizeof(test_data3), test_data3);
 
     while(1) {
         // We check each iteration if the timer has expired
@@ -136,13 +134,8 @@ int main(void) {
         // (Section 4.4.1)
         //
         if (SYST->SYST_CSR & (1 << 16)) {
-            printf("Sending test_packet:\n");
-            print_packet(&test_packet);
-            print_packet(&ack_packet);
-            print_packet(&rck_packet);
-            send_packet(&test_packet);
-            send_rck();
             send_ack();
+            handle_packet();
         }
     }
 

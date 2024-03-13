@@ -50,26 +50,26 @@ uint8_t compute_crc(uint8_t length, uint8_t *data);
 /*
  * Actually sends the packet, and waits for the response.
  * */
-bool send_packet(packet_t *p);
+void send_packet(packet_t *p);
 
 /*
  * Sends an ACK packet.
  * */
-bool send_ack();
+void send_ack();
 
 /*
  * Sends aan RCK packet.
  * */
-bool send_rck();
+void send_rck();
 
 /*
  * Handles a received packet.
  * */
-bool handle_packet(packet_t *p);
+void handle_packet();
 
 void write_byte(uint8_t byte);
 
-uint32_t read_byte();
+uint8_t read_byte();
 
 void print_packet(packet_t *p);
 
