@@ -150,6 +150,19 @@ typedef struct TIMx_t {
 	__IO uint32_t TIMx_DMAR;
 } TIMx_t ;
 
+typedef struct I2C_t {
+    __IO uint32_t I2C_CR1;
+    __IO uint32_t I2C_CR2;
+    __IO uint32_t I2C_OAR1;
+    __IO uint32_t I2C_OAR2;
+    __IO uint32_t I2C_DR;
+    __IO uint32_t I2C_SR1;
+    __IO uint32_t I2C_SR2;
+    __IO uint32_t I2C_CCR;
+    __IO uint32_t I2C_TRISE;
+    __IO uint32_t I2C_FLTR;
+} I2Cx_t;
+
 /**
  * @brief Struct Pointer for RCC Peripherals assigned with fixed address specified in reference manual.
  *
